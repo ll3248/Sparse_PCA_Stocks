@@ -9,7 +9,8 @@
 
 # load(source.R)
 # load("~/GitHub/Sparse_PCA_Stocks/output/raw_stock_prices_27_companies_2018-01-01_to_2021-01-31.RData")
-load("../output/raw_stock_prices_27_companies_2018-01-01_to_2021-01-31.RData")
+# load("../output/raw_stock_prices_27_companies_2018-01-01_to_2021-01-31.RData")
+load("../output/stock_data_02_04_2021.RData")
 
 library(shiny)
 library(shinydashboard)
@@ -21,18 +22,14 @@ library(sparsepca)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-    #set.seed(122)
-    #histdata <- rnorm(500)
-    #
-    #output$plot1 <- renderPlot({
-    #    data <- histdata[seq_len(input$slider)]
-    #    hist(data)
-    #})
-    
     
     # Tab 1: Welcome
     
+    output$stock_names <- renderTable(data.frame(index, companies, company_names))
+    
     # Tab 2: Historical Trend Analysis
+    
+    
     
     output$historical_trend <- renderPlotly({
         
@@ -115,10 +112,9 @@ shinyServer(function(input, output) {
     })
     
     # Tab 5: Returns Analysis 
+
     
-    # Tab 6: Meme Stocks
-    
-    # Tab 7: Returns Analysis
+    # Tab 6: About
     
     
     
