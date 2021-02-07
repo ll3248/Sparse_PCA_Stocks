@@ -1,0 +1,12 @@
+name: PCAPB_Local
+title: PCAPB_Local
+username:
+account: ll3248
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3595259
+bundleId: 4190663
+url: https://ll3248.shinyapps.io/PCAPB_Local/
+when: 1612669547.55277
+asMultiple: FALSE
+asStatic: FALSE

@@ -7,11 +7,17 @@
 #    http://shiny.rstudio.com/
 #
 
+library(shiny)
+library(shinydashboard)
+library(quantmod)
+library(plotly)
+library(sparsepca)
+
 shinyUI(dashboardPage(
-    dashboardHeader(title = "Stock Market Analysis"),
+    dashboardHeader(title = "PCAPB"),
     dashboardSidebar(
         sidebarMenu(
-            menuItem("PCAPB", tabName = "welcome", icon = icon("desktop")),
+            menuItem("Welcome", tabName = "welcome", icon = icon("desktop")),
             menuItem("Historical Trends", tabName = "history", icon = icon("chart-line")),
             menuItem("Market Analysis", tabName = "pca", icon = icon("search-dollar")),
             menuItem("Portfolio Selection", tabName = "spca", icon = icon("folder")),
@@ -24,7 +30,7 @@ shinyUI(dashboardPage(
             # Tab 1: Welcome
             tabItem(tabName = "welcome",
                     
-                    h2("Welcome to the PCA Portfolio Builder!"),
+                    h2("Welcome to the PCAPB: Principal Compnenets Analysis Portfolio Builder!"),
                     
                     fluidPage(
                         
@@ -82,7 +88,7 @@ shinyUI(dashboardPage(
                             textInput(inputId = "historical_ticker", label = "Input Ticker:", value = ""),
                             dateRangeInput("trend_date", strong("Select Date Range:"),
                                            start = Sys.Date()-30, end = Sys.Date(),
-                                           min = "2018-01-01", max = Sys.Date()))
+                                           min = "2017-01-01", max = Sys.Date()))
                     ), 
                     
                     fluidRow(
@@ -124,7 +130,7 @@ shinyUI(dashboardPage(
                             textInput(inputId = "pca_ticker", label = "Input Ticker:", value = ""),
                             dateRangeInput("pca_date", strong("Select Date Range:"),
                                            start = Sys.Date()-30, end = Sys.Date(),
-                                           min = "2018-01-01", max = Sys.Date()))
+                                           min = "2017-01-01", max = Sys.Date()))
                     ), 
                     
                     fluidRow(
@@ -163,7 +169,7 @@ shinyUI(dashboardPage(
                             textInput(inputId = "spca_ticker", label = "Input Ticker:", value = ""),
                             dateRangeInput("spca_date", strong("Select Date Range:"),
                                            start = Sys.Date()-30, end = Sys.Date(),
-                                           min = "2018-01-01", max = Sys.Date()))
+                                           min = "2017-01-01", max = Sys.Date()))
                         ), 
                     
                     fluidRow(
