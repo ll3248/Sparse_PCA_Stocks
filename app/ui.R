@@ -7,7 +7,6 @@
 #    http://shiny.rstudio.com/
 #
 
-# Define UI for application that draws a histogram
 shinyUI(dashboardPage(
     dashboardHeader(title = "Stock Market Analysis"),
     dashboardSidebar(
@@ -83,7 +82,7 @@ shinyUI(dashboardPage(
                             textInput(inputId = "historical_ticker", label = "Input Ticker:", value = ""),
                             dateRangeInput("trend_date", strong("Select Date Range:"),
                                            start = Sys.Date()-30, end = Sys.Date(),
-                                           min = "2017-01-01", max = Sys.Date()))
+                                           min = "2018-01-01", max = Sys.Date()))
                     ), 
                     
                     fluidRow(
@@ -125,7 +124,7 @@ shinyUI(dashboardPage(
                             textInput(inputId = "pca_ticker", label = "Input Ticker:", value = ""),
                             dateRangeInput("pca_date", strong("Select Date Range:"),
                                            start = Sys.Date()-30, end = Sys.Date(),
-                                           min = "2017-01-01", max = Sys.Date()))
+                                           min = "2018-01-01", max = Sys.Date()))
                     ), 
                     
                     fluidRow(
@@ -164,7 +163,7 @@ shinyUI(dashboardPage(
                             textInput(inputId = "spca_ticker", label = "Input Ticker:", value = ""),
                             dateRangeInput("spca_date", strong("Select Date Range:"),
                                            start = Sys.Date()-30, end = Sys.Date(),
-                                           min = "2017-01-01", max = Sys.Date()))
+                                           min = "2018-01-01", max = Sys.Date()))
                         ), 
                     
                     fluidRow(

@@ -7,15 +7,8 @@
 #    http://shiny.rstudio.com/
 #
 
-source("source.R")
-
-#library(shiny)
-#library(shinydashboard)
-
-#library(quantmod)
-#library(plotly)
-#library(sparsepca)
-
+# source("source.R")
+load("./output/stock_data_02_06_2021.RData")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
