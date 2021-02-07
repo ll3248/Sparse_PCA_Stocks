@@ -7,17 +7,14 @@
 #    http://shiny.rstudio.com/
 #
 
-# load(source.R)
-# load("~/GitHub/Sparse_PCA_Stocks/output/raw_stock_prices_27_companies_2018-01-01_to_2021-01-31.RData")
-# load("../output/raw_stock_prices_27_companies_2018-01-01_to_2021-01-31.RData")
-load("../output/stock_data_02_04_2021.RData")
+source("source.R")
 
-library(shiny)
-library(shinydashboard)
+#library(shiny)
+#library(shinydashboard)
 
-library(quantmod)
-library(plotly)
-library(sparsepca)
+#library(quantmod)
+#library(plotly)
+#library(sparsepca)
 
 
 # Define server logic required to draw a histogram
@@ -25,16 +22,17 @@ shinyServer(function(input, output) {
     
     # Tab 1: Welcome
     
-    output$stock_names <- renderTable(data.frame(index, companies, company_names))
+    main_list_df <- data.frame(Index = as.integer(index),  Company = company_names, Symbol = companies)
+    main_list_columns <- cbind(main_list_df[1:9, ], main_list_df[10:18, ], main_list_df[19:27, ])
+    
+    output$stock_names <- renderTable(main_list_columns)
     
     # Tab 2: Historical Trend Analysis
-    
-    
-    
+
     output$historical_trend <- renderPlotly({
         
         companies_adjusted_subset <- companies_adjusted %>% 
-            filter((date > input$trend_date[1]) & (date < input$trend_date[2]))
+            filter((date >= input$trend_date[1]) & (date <= input$trend_date[2]))
         
         
         plotly_line <- plot_ly(data = companies_adjusted_subset, x = ~date, y = ~MMM, name = 'MMM', 
@@ -45,9 +43,26 @@ shinyServer(function(input, output) {
         }
         
         plotly_line <- plotly_line %>% 
-            layout(title = 'Historical Analysis of Select Companies from Dow Jones Index',
+            layout(title = 'Comparing Stocks Prices from Dow Jones Companies',
                    xaxis = list(title = 'Day', zeroline = TRUE, tickangle = -60),
                    yaxis = list(title = 'Adjusted Closing Price ($)'))
+        
+        # check to see if the input is blank; skip the rest if it is 
+        if (input$historical_ticker != ""){
+            new_stock_symbol = toupper(input$historical_ticker)
+            
+            # check to see if the input is already one of the companies listed; skip the rest if it is 
+            if (any(new_stock_symbol != companies)){
+                data_new_stock =  getSymbols(new_stock_symbol, auto.assign = F, from = input$trend_date[1], to = input$trend_date[2])
+                
+                data_new_stock_df = data.frame(data_new_stock_dates = companies_adjusted_subset$date, data_new_stock_adjusted = as.numeric(data_new_stock[, 6]))
+                
+                # 6th column is the adjusted prices 
+                # add the 6th column of values as new line onto the plot
+                plotly_line <- plotly_line %>% add_trace(data = data_new_stock_df, x = ~data_new_stock_dates, y = ~data_new_stock_adjusted, name = new_stock_symbol, line = list(color = 'rgb(28, 28, 28)')) 
+            }
+        }
+        
         
         plotly_line
     })
@@ -55,66 +70,175 @@ shinyServer(function(input, output) {
     # Tab 3: Market Analysis with PCA 
     
     output$pca_biplot <- renderPlot({
-        companies_adjusted_subset <- companies_adjusted %>% 
-            filter((date > input$pca_date[1]) & (date < input$pca_date[2]))
         
-        pca_analysis <- prcomp(companies_adjusted_subset[2:ncol(companies_adjusted)], scale = TRUE, center = TRUE)
+        pca_ticker <- toupper(input$pca_ticker)
         
-        pca_loadings_df <- data.frame(loading1 = pca_analysis$rotation[, 1], 
-                                       loading2 = pca_analysis$rotation[, 2], 
-                                       company = colnames(companies_adjusted)[-1])
-        
-        pca_loadings_df_input <- pca_loadings_df[pca_loadings_df$company == input$pca_ticker, ]
-        
-        ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
-            geom_text() + 
-            geom_point(alpha = 0.40) + 
-            geom_vline(xintercept = 0) + 
-            geom_hline(yintercept = 0) + 
-            labs(x = "PC1", y = "PC2", title = "PCA - Portfolio Correlations") + 
-            theme(plot.title = element_text(hjust = 0.5)) + 
+        # check if the input stock ticker is in the list of companies or blank, if so, skip to else-statement
+        if (any(pca_ticker == companies) | (pca_ticker == "")) {
             
-            # highlight specific point selected from input above
-            geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), 
-                       color = "red", shape = 1, size = 15)
+            # subsetting
+            companies_adjusted_subset <- companies_adjusted %>% 
+                filter((date >= input$pca_date[1]) & (date <= input$pca_date[2]))
+            
+            # pca analysis 
+            pca_analysis <- prcomp(companies_adjusted_subset[2:ncol(companies_adjusted)], scale = TRUE, center = TRUE)
+            
+            # extract loadings 
+            pca_loadings_df <- data.frame(loading1 = pca_analysis$rotation[, 1], 
+                                          loading2 = pca_analysis$rotation[, 2], 
+                                          company = colnames(companies_adjusted)[-1])
+            
+            pca_loadings_df_input <- pca_loadings_df[pca_loadings_df$company == pca_ticker, ]
+            
+            # create plot 
+            pca_biplot = ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
+                geom_text() + 
+                geom_point(alpha = 0.40) + 
+                geom_vline(xintercept = 0) + 
+                geom_hline(yintercept = 0) + 
+                labs(x = "PC1", y = "PC2", title = "PCA - Portfolio Correlations") + 
+                theme(plot.title = element_text(hjust = 0.5))
+                
+            # check if the input stock ticker is blank again; add a circle to input stock if not, otherwise, skip
+            if (pca_ticker != ""){
+                # highlight specific point selected from input above
+                pca_biplot = pca_biplot + geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 15)
+            }
+        
+            pca_biplot
+                
+        } 
+        
+        else{
+            # subsetting
+            
+            companies_adjusted_subset <- companies_adjusted %>% 
+                filter((date >= input$pca_date[1]) & (date <= input$pca_date[2]))
+            
+            # get adjusted prices for new stock and add onto the companies 
+            data_new_stock =  getSymbols(pca_ticker, auto.assign = F, from = input$pca_date[1], to = input$pca_date[2])
+            companies_adjusted_subset_new_data <- cbind(companies_adjusted_subset, as.numeric(data_new_stock[, 6]))
+            colnames(companies_adjusted_subset_new_data)[29] <- pca_ticker
+            
+            # pca analysis 
+            pca_analysis <- prcomp(companies_adjusted_subset_new_data[2:ncol(companies_adjusted_subset_new_data)], scale = TRUE, center = TRUE)
+            
+            # extract loadings 
+            pca_loadings_df <- data.frame(loading1 = pca_analysis$rotation[, 1], 
+                                          loading2 = pca_analysis$rotation[, 2], 
+                                          company = colnames(companies_adjusted_subset_new_data)[-1])
+            
+            pca_loadings_df_input <- pca_loadings_df[pca_loadings_df$company == pca_ticker, ]
+            
+            # create plot 
+            pca_biplot = ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
+                geom_text() + 
+                geom_point(alpha = 0.40) + 
+                geom_vline(xintercept = 0) + 
+                geom_hline(yintercept = 0) + 
+                labs(x = "PC1", y = "PC2", title = "PCA - Portfolio Correlations") + 
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                
+                # highlight specific point selected from input above
+                geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 15)
+            
+            
+            pca_biplot
+            
+            }
+        
         
     })
     
     # Tab 4: Portfolio Selections with Sparse PCA
     
     output$sparse_pca_biolot <- renderPlot({
-        companies_adjusted_subset <- companies_adjusted %>% 
-            filter((date > input$spca_date[1]) & (date < input$spca_date[2]))
         
-        spca_analysis <- spca(companies_adjusted_subset[2:ncol(companies_adjusted)], scale = TRUE, center = TRUE, verbose = FALSE)
+        spca_ticker <- toupper(input$spca_ticker)
         
-        spca_loadings_df <- data.frame(loading1 = spca_analysis$loadings[, 1], 
-                                       loading2 = spca_analysis$loadings[, 2], 
-                                       company = colnames(companies_adjusted)[-1])
-        
-        spca_loadings_df$selected <- ifelse((spca_analysis$loadings[, 1] == 0) | (spca_analysis$loadings[, 2] == 0), "No", "Yes")
-        
-        spca_loadings_df_input <- spca_loadings_df[spca_loadings_df$company == input$spca_ticker, ]
-        
-        ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
-            geom_text(aes(color = selected)) + 
-            geom_point(aes(color = selected), alpha = 0.40) + 
-
-            geom_vline(xintercept = 0) + 
-            geom_hline(yintercept = 0) + 
-            labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Correlations", color = "Stock to Consider?") + 
-            theme(plot.title = element_text(hjust = 0.5)) + 
+        # check if the input stock ticker is in the list of companies or blank, if so, skip to else-statement
+        if (any(spca_ticker == companies) | (spca_ticker == "")) {
             
-            # highlight specific point selected from input above
-            geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), 
-                       color = "black", shape = 1, size = 15)
+            # subsetting
+            companies_adjusted_subset <- companies_adjusted %>% 
+                filter((date >= input$spca_date[1]) & (date <= input$spca_date[2]))
+            
+            # sparse pca analysis 
+            spca_analysis <- spca(companies_adjusted_subset[2:ncol(companies_adjusted)], scale = TRUE, center = TRUE, verbose = FALSE)
+            
+            # extract loadings
+            spca_loadings_df <- data.frame(loading1 = spca_analysis$loadings[, 1], 
+                                           loading2 = spca_analysis$loadings[, 2], 
+                                           company = colnames(companies_adjusted)[-1])
+            
+            spca_loadings_df$selected <- ifelse((spca_analysis$loadings[, 1] == 0) | (spca_analysis$loadings[, 2] == 0), "No", "Yes")
+            
+            spca_loadings_df_input <- spca_loadings_df[spca_loadings_df$company == spca_ticker, ]
+            
+            # plot 
+            spca_biplot = ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
+                geom_text(aes(color = selected), size = 5) + 
+                geom_point(aes(color = selected), alpha = 0.40) + 
+                
+                geom_vline(xintercept = 0) + 
+                geom_hline(yintercept = 0) + 
+                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Correlations", color = "Stock to Consider?") + 
+                theme(plot.title = element_text(hjust = 0.5)) 
+            
+            # check if the input stock ticker is blank again; add a circle to input stock if not, otherwise, skip
+            if (spca_ticker != ""){
+                # highlight specific point selected from input above
+                spca_biplot = spca_biplot + geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 15)
+            }
+            
+            spca_biplot
+        }
+        
+        else{
+            # subsetting
+            companies_adjusted_subset <- companies_adjusted %>% 
+                filter((date >= input$spca_date[1]) & (date <= input$spca_date[2]))
+            
+            # get adjusted prices for new stock and add onto the companies 
+            data_new_stock =  getSymbols(spca_ticker, auto.assign = F, from = input$spca_date[1], to = input$spca_date[2])
+            companies_adjusted_subset_new_data <- cbind(companies_adjusted_subset, as.numeric(data_new_stock[, 6]))
+            colnames(companies_adjusted_subset_new_data)[29] <- spca_ticker
+            
+            
+            # sparse pca analysis 
+            spca_analysis <- spca(companies_adjusted_subset_new_data[2:ncol(companies_adjusted_subset_new_data)], scale = TRUE, center = TRUE, verbose = FALSE)
+            
+            # extract loadings
+            spca_loadings_df <- data.frame(loading1 = spca_analysis$loadings[, 1], 
+                                           loading2 = spca_analysis$loadings[, 2], 
+                                           company = colnames(companies_adjusted_subset_new_data)[-1])
+            
+            spca_loadings_df$selected <- ifelse((spca_analysis$loadings[, 1] == 0) | (spca_analysis$loadings[, 2] == 0), "No", "Yes")
+            
+            spca_loadings_df_input <- spca_loadings_df[spca_loadings_df$company == spca_ticker, ]
+            
+            # plot 
+            spca_biplot = ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
+                geom_text(aes(color = selected), size = 5) + 
+                geom_point(aes(color = selected), alpha = 0.40) + 
+                
+                geom_vline(xintercept = 0) + 
+                geom_hline(yintercept = 0) + 
+                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Correlations", color = "Stock to Consider?") + 
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                
+                # highlight specific point selected from input above
+                geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 15)
+            
+            spca_biplot
+            
+            }
+        
+        
         
     })
     
-    # Tab 5: Returns Analysis 
-
-    
-    # Tab 6: About
+    # Tab 5: About
     
     
     

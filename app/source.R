@@ -53,31 +53,28 @@ if (!require("sparsepca")) {
 # get data via web scraping from yahoo finance
 # focus is on 27 companies that were listed in Dow for 2+ years
 
-index <- range(1, 27)
+index <- seq(1, 27, 1)
 
-company_names <- c("3M", "American Express", "Apple", "Boeing", "Caterpillar", "Chevron", "Cisco", "Coca-Cola", "Disney", 
+company_names <- c("3M", "American Express", "Apple", "Boeing", "Caterpillar", "Chevron", "Cisco", "Disney", "Coca-Cola", 
                    "ExxonMobil", "Goldman Sachs", "Home Depot", "IBM", "Intel", "Johnson & Johnson", "JP Morgan", "McDonald's", "Merck", 
-                   "Microsoft", "Nike", "Procter & Gamble", "Travelers Companies", "UnitedHealth Group", "Verizon", "Visa", "WalMart", "Walgreens")
+                   "Microsoft", "Nike", "Procter & Gamble", "Travelers Companies", "UnitedHealth Group", "Verizon", "Visa", "Walgreens", "WalMart")
 
-companies <- c("MMM", "AXP", "AAPL", "BA", "CAT", "CVX", 
-               "CSCO", "DIS", "KO", "XOM", "GS", "HD", 
-               "IBM", "INTC", "JNJ", "JPM", "MCD", "MRK", 
-               "MSFT", "NKE", "PG", "TRV", "UNH", 
-               "VZ", "V", "WMT", "WBA")
+companies <- c("MMM", "AXP", "AAPL", "BA", "CAT", "CVX", "CSCO", "DIS", "KO", 
+               "XOM", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "MCD", "MRK", 
+               "MSFT", "NKE", "PG", "TRV", "UNH", "VZ", "V", "WBA", "WMT")
+
 companies_df_list <- rep(NA, length(companies))
 
 for (i in 1:length(companies)){
   assign(paste("data", companies[i], sep = ""), 
-         getSymbols(companies[i], auto.assign = F, from ="2018-01-01", to = Sys.Date()))
+         getSymbols(companies[i], auto.assign = F, from ="2017-01-01", to = Sys.Date()))
 }
 
 # datasets are labeled as 'data[STOCK]' e.g. dataAAPL
 
-companies_df <- list(dataMMM, dataAXP, dataAAPL, dataBA, dataCAT, dataCVX, 
-                     dataCSCO, dataDIS, dataKO, dataXOM, dataGS, dataHD, 
-                     dataIBM, dataINTC, dataJNJ, dataJPM, dataMCD, dataMRK, 
-                     dataMSFT, dataNKE, dataPG, dataTRV, dataUNH, 
-                     dataVZ, dataV, dataWMT, dataWBA)
+companies_df <- list(dataMMM, dataAXP, dataAAPL, dataBA, dataCAT, dataCVX, dataCSCO, dataDIS, dataKO, 
+                     dataXOM, dataGS, dataHD, dataIBM, dataINTC, dataJNJ, dataJPM, dataMCD, dataMRK, 
+                     dataMSFT, dataNKE, dataPG, dataTRV, dataUNH, dataVZ, dataV, dataWBA, dataWMT)
 
 ### DATA CLEANING ### FOR LONG-TERM STOCKS ###
 #####################################################################
@@ -94,57 +91,3 @@ for (j in 1:length(companies_df)){
 
 colnames(companies_adjusted) <- c("date", companies)
 
-
-
-### DATA SOURCING ### FOR INDEX PORTFOLIOS ###
-#####################################################################
-
-# datasets are labeled as 'data[STOCK]' e.g. dataAAPL
-
-dataDJI <- getSymbols("DJI", auto.assign = F, from ="2021-01-01", to = Sys.Date())
-
-### DATA CLEANING ### FOR INDEX PORTFOLIOS ###
-#####################################################################
-
-DJI_dates <- rownames(data.frame(dataDJI))
-DJI_adjusted <- as.numeric(dataDJI$DJI.Adjusted)
-
-DJI_returns_dates <- DJI_dates[-1]
-DJI_adjusted_returns <- DJI_adjusted[-1] - DJI_adjusted[-length(DJI_adjusted)]
-
-
-### DATA SOURCING ### FOR SHORT-TERM MEME STOCKS ###
-#####################################################################
-
-meme_companies <- c("AMC", "BB", "EXPR", "GME", "GNUS", "KOSS", "NAKD", "NOK")
-
-meme_companies_df_list <- rep(NA, length(meme_companies))
-
-for (i in 1:length(meme_companies)){
-  assign(paste("data", meme_companies[i], sep = ""), 
-         getSymbols(meme_companies[i], auto.assign = F, from ="2021-01-01", to = Sys.Date()))
-}
-
-# datasets are labeled as 'data[STOCK]' e.g. dataAAPL
-
-meme_companies_df <- list(dataAMC, dataBB, dataEXPR, dataGME, dataGNUS, dataKOSS, dataNAKD, dataNOK)
-
-### DATA CLEANING ### FOR SHORT-TERM MEME STOCKS ###
-#####################################################################
-
-meme_dates <- rownames(data.frame(dataAMC))
-
-meme_companies_adjusted <- data.frame(meme_dates)
-
-for (j in 1:length(meme_companies_df)){
-  meme_companies_adjusted <- cbind(meme_companies_adjusted, as.numeric(meme_companies_df[[j]][,6])) # adjusted closing prices
-}
-
-colnames(meme_companies_adjusted) <- c("date", meme_companies)
-
-
-#prcomp(meme_companies_adjusted[,-1], scale = TRUE, center = TRUE)
-#biplot(prcomp(meme_companies_adjusted[,-1], scale = TRUE, center = TRUE))
-
-
-# save.image(file = "../output/stock_data.RData")
