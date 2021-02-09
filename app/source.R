@@ -55,11 +55,11 @@ if (!require("sparsepca")) {
 
 index <- seq(1, 27, 1)
 
-company_names <- c("3M", "American Express", "Apple", "Boeing", "Caterpillar", "Chevron", "Cisco", "Disney", "Coca-Cola", 
+company_names <- c("3M", "American Express", "Apple", "Boeing", "Caterpillar", "Chevron", "Cisco", "Coca-Cola", "Disney",
                    "ExxonMobil", "Goldman Sachs", "Home Depot", "IBM", "Intel", "Johnson & Johnson", "JP Morgan", "McDonald's", "Merck", 
                    "Microsoft", "Nike", "Procter & Gamble", "Travelers Companies", "UnitedHealth Group", "Verizon", "Visa", "Walgreens", "WalMart")
 
-companies <- c("MMM", "AXP", "AAPL", "BA", "CAT", "CVX", "CSCO", "DIS", "KO", 
+companies <- c("MMM", "AXP", "AAPL", "BA", "CAT", "CVX", "CSCO", "KO", "DIS",
                "XOM", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "MCD", "MRK", 
                "MSFT", "NKE", "PG", "TRV", "UNH", "VZ", "V", "WBA", "WMT")
 
@@ -72,7 +72,7 @@ for (i in 1:length(companies)){
 
 # datasets are labeled as 'data[STOCK]' e.g. dataAAPL
 
-companies_df <- list(dataMMM, dataAXP, dataAAPL, dataBA, dataCAT, dataCVX, dataCSCO, dataDIS, dataKO, 
+companies_df <- list(dataMMM, dataAXP, dataAAPL, dataBA, dataCAT, dataCVX, dataCSCO, dataKO, dataDIS,
                      dataXOM, dataGS, dataHD, dataIBM, dataINTC, dataJNJ, dataJPM, dataMCD, dataMRK, 
                      dataMSFT, dataNKE, dataPG, dataTRV, dataUNH, dataVZ, dataV, dataWBA, dataWMT)
 

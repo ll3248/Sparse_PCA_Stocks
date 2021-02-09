@@ -5,9 +5,9 @@ account: ll3248
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3595293
-bundleId: 4190673
+bundleId: 4198795
 url: https://ll3248.shinyapps.io/PCAPB/
-when: 1612669985.61705
+when: 1612839358.28164
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: README.md|output/stock_data_02_06_2021.RData
+ignoredFiles: README.md|output/README.md|output/stock_data_local.RData

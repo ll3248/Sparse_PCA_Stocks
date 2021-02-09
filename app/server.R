@@ -13,9 +13,9 @@ library(quantmod)
 library(plotly)
 library(sparsepca)
 
-source("source.R")
+source("source.R") # for deployment
 
-#load("./output/stock_data_02_06_2021.RData")
+# load("stock_data_local.RData") # used for local testing 
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -92,7 +92,7 @@ shinyServer(function(input, output) {
             
             # create plot 
             pca_biplot = ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text() + 
+                geom_text(size = 6, position = position_jitter(width = 0.015, height = 0.015)) + 
                 geom_point(alpha = 0.40) + 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
@@ -102,7 +102,7 @@ shinyServer(function(input, output) {
             # check if the input stock ticker is blank again; add a circle to input stock if not, otherwise, skip
             if (pca_ticker != ""){
                 # highlight specific point selected from input above
-                pca_biplot = pca_biplot + geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 15)
+                pca_biplot = pca_biplot + geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 20)
             }
         
             pca_biplot
@@ -132,7 +132,7 @@ shinyServer(function(input, output) {
             
             # create plot 
             pca_biplot = ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text() + 
+                geom_text(size = 6, position=position_jitter(width = 0.015, height = 0.015)) + 
                 geom_point(alpha = 0.40) + 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
@@ -140,7 +140,7 @@ shinyServer(function(input, output) {
                 theme(plot.title = element_text(hjust = 0.5)) + 
                 
                 # highlight specific point selected from input above
-                geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 15)
+                geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 20)
             
             
             pca_biplot
@@ -177,18 +177,18 @@ shinyServer(function(input, output) {
             
             # plot 
             spca_biplot = ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text(aes(color = selected), size = 5) + 
+                geom_text(aes(color = selected), size = 6, position = position_jitter(width = 0.015, height = 0.015)) + 
                 geom_point(aes(color = selected), alpha = 0.40) + 
                 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
-                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Correlations", color = "Stock to Consider?") + 
+                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Selection", color = "Stock to Consider?") + 
                 theme(plot.title = element_text(hjust = 0.5)) 
             
             # check if the input stock ticker is blank again; add a circle to input stock if not, otherwise, skip
             if (spca_ticker != ""){
                 # highlight specific point selected from input above
-                spca_biplot = spca_biplot + geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 15)
+                spca_biplot = spca_biplot + geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 20)
             }
             
             spca_biplot
@@ -219,16 +219,16 @@ shinyServer(function(input, output) {
             
             # plot 
             spca_biplot = ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text(aes(color = selected), size = 5) + 
+                geom_text(aes(color = selected), size = 6, position = position_jitter(width = 0.015, height = 0.015)) + 
                 geom_point(aes(color = selected), alpha = 0.40) + 
                 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
-                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Correlations", color = "Stock to Consider?") + 
+                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Selection", color = "Stock to Consider?") + 
                 theme(plot.title = element_text(hjust = 0.5)) + 
                 
                 # highlight specific point selected from input above
-                geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 15)
+                geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 20)
             
             spca_biplot
             
