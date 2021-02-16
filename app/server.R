@@ -15,7 +15,7 @@ library(sparsepca)
 
 source("source.R") # for deployment
 
-# load("stock_data_local.RData") # used for local testing 
+# load("output/stock_data_local.RData") # used for local testing -- cannot pull data from stocks outside the 27 listed in this state 
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -69,7 +69,7 @@ shinyServer(function(input, output) {
     
     # Tab 3: Market Analysis with PCA 
     
-    output$pca_biplot <- renderPlot({
+    output$pca_biplot <- renderPlotly({
         
         pca_ticker <- toupper(input$pca_ticker)
         
@@ -92,8 +92,8 @@ shinyServer(function(input, output) {
             
             # create plot 
             pca_biplot = ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text(size = 6, position = position_jitter(width = 0.015, height = 0.015)) + 
-                geom_point(alpha = 0.40) + 
+                geom_text(size = 4, position = position_jitter(width = 0.005, height = 0.005)) + 
+                geom_point(alpha = 0.25) + 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
                 labs(x = "PC1", y = "PC2", title = "PCA - Portfolio Correlations") + 
@@ -102,10 +102,11 @@ shinyServer(function(input, output) {
             # check if the input stock ticker is blank again; add a circle to input stock if not, otherwise, skip
             if (pca_ticker != ""){
                 # highlight specific point selected from input above
-                pca_biplot = pca_biplot + geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 20)
+                pca_biplot = pca_biplot + geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 15)
             }
         
-            pca_biplot
+            pca_biplot %>% 
+                ggplotly(tooltip = "all", dynamicTicks = TRUE)
                 
         } 
         
@@ -132,18 +133,19 @@ shinyServer(function(input, output) {
             
             # create plot 
             pca_biplot = ggplot(pca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text(size = 6, position=position_jitter(width = 0.015, height = 0.015)) + 
-                geom_point(alpha = 0.40) + 
+                geom_text(size = 4, position=position_jitter(width = 0.005, height = 0.005)) + 
+                geom_point(alpha = 0.25) + 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
                 labs(x = "PC1", y = "PC2", title = "PCA - Portfolio Correlations") + 
                 theme(plot.title = element_text(hjust = 0.5)) + 
                 
                 # highlight specific point selected from input above
-                geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 20)
+                geom_point(aes(x = pca_loadings_df_input$loading1, pca_loadings_df_input$loading2), color = "red", shape = 1, size = 15)
             
             
-            pca_biplot
+            pca_biplot %>% 
+                ggplotly(tooltip = "all", dynamicTicks = TRUE)
             
             }
         
@@ -152,7 +154,7 @@ shinyServer(function(input, output) {
     
     # Tab 4: Portfolio Selections with Sparse PCA
     
-    output$sparse_pca_biolot <- renderPlot({
+    output$sparse_pca_biolot <- renderPlotly({
         
         spca_ticker <- toupper(input$spca_ticker)
         
@@ -177,21 +179,22 @@ shinyServer(function(input, output) {
             
             # plot 
             spca_biplot = ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text(aes(color = selected), size = 6, position = position_jitter(width = 0.015, height = 0.015)) + 
-                geom_point(aes(color = selected), alpha = 0.40) + 
+                geom_text(aes(color = selected), size = 4, position = position_jitter(width = 0.005, height = 0.005)) + 
+                geom_point(aes(color = selected), alpha = 0.25) + 
                 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
-                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Selection", color = "Stock to Consider?") + 
-                theme(plot.title = element_text(hjust = 0.5)) 
+                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Selection", color = "Consider in \n Portfolio?") + 
+                theme(plot.title = element_text(hjust = 0.5), legend.position = "right", legend.title = element_text(hjust = 0.5, size = 8)) 
             
             # check if the input stock ticker is blank again; add a circle to input stock if not, otherwise, skip
             if (spca_ticker != ""){
                 # highlight specific point selected from input above
-                spca_biplot = spca_biplot + geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 20)
+                spca_biplot = spca_biplot + geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 15)
             }
             
-            spca_biplot
+            spca_biplot %>% 
+                ggplotly(tooltip = "all", dynamicTicks = TRUE)
         }
         
         else{
@@ -219,18 +222,19 @@ shinyServer(function(input, output) {
             
             # plot 
             spca_biplot = ggplot(spca_loadings_df, aes(loading1, loading2, label = company)) + 
-                geom_text(aes(color = selected), size = 6, position = position_jitter(width = 0.015, height = 0.015)) + 
-                geom_point(aes(color = selected), alpha = 0.40) + 
+                geom_text(aes(color = selected), size = 4, position = position_jitter(width = 0.005, height = 0.005)) + 
+                geom_point(aes(color = selected), alpha = 0.25) + 
                 
                 geom_vline(xintercept = 0) + 
                 geom_hline(yintercept = 0) + 
-                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Selection", color = "Stock to Consider?") + 
-                theme(plot.title = element_text(hjust = 0.5)) + 
+                labs(x = "PC1", y = "PC2", title = "Sparse PCA - Portfolio Selection", color = "Consider in \n Portfolio?") + 
+                theme(plot.title = element_text(hjust = 0.5), legend.position = "right", legend.title = element_text(hjust = 0.5, size = 5)) + 
                 
                 # highlight specific point selected from input above
-                geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 20)
+                geom_point(aes(x = spca_loadings_df_input$loading1, spca_loadings_df_input$loading2), color = "black", shape = 1, size = 8)
             
-            spca_biplot
+            spca_biplot %>% 
+                ggplotly(tooltip = "all", dynamicTicks = TRUE)
             
             }
         

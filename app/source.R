@@ -17,10 +17,6 @@ if (!require("shinythemes")) {
   install.packages("shinythemes")
   library(shinythemes)
 }
-if (!require("plotly")) {
-  install.packages("plotly")
-  library(plotly)
-}
 if (!require("shinydashboard")) {
   install.packages("shinydashboard")
   library(shinydashboard)
